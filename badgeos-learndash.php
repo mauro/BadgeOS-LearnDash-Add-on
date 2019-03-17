@@ -77,25 +77,31 @@ class BadgeOS_LearnDash {
 		// If BadgeOS is unavailable, deactivate our plugin
 		add_action( 'admin_notices', array( $this, 'maybe_disable_plugin' ) );
 
-		// LearnDash Action Hooks
-		$this->triggers = array(
-			'learndash_quiz_completed' => __( 'Passed Quiz', 'badgeos-learndash' ),
-			'badgeos_learndash_quiz_completed_specific' => __( 'Minimum % Grade on a Quiz', 'badgeos-learndash' ),
-			'badgeos_learndash_quiz_completed_fail' => __( 'Fails Quiz', 'badgeos-learndash' ),
-			'learndash_lesson_completed' => __( 'Completed Lesson', 'badgeos-learndash' ),
-			'learndash_course_completed' => __( 'Completed Course', 'badgeos-learndash' ),
-			'badgeos_learndash_course_completed_tag' => __( 'Completed Course from a Tag', 'badgeos-learndash' )
-		);
+        // LearnDash Action Hooks
+        $this->triggers = array(
+            'learndash_quiz_completed' => __( 'Passed Quiz', 'badgeos-learndash' ),
+            'badgeos_learndash_quiz_completed_specific' => __( 'Minimum % Grade on a Quiz', 'badgeos-learndash' ),
+            'badgeos_learndash_quiz_completed_fail' => __( 'Fails Quiz', 'badgeos-learndash' ),
+            'learndash_topic_completed' => __( 'Completed Topic', 'badgeos-learndash' ),
+            'learndash_lesson_completed' => __( 'Completed Lesson', 'badgeos-learndash' ),
+            'learndash_course_completed' => __( 'Completed Course', 'badgeos-learndash' ),
+            'badgeos_learndash_topic_completed_tag' => __( 'Completed Topic from a Tag', 'badgeos-learndash' ),
+            'badgeos_learndash_lesson_completed_tag' => __( 'Completed Lesson from a Tag', 'badgeos-learndash' ),
+            'badgeos_learndash_course_completed_tag' => __( 'Completed Course from a Tag', 'badgeos-learndash' )
 
-		// Actions that we need split up
-		$this->actions = array(
-			'learndash_course_completed' => 'badgeos_learndash_course_completed_tag',
-			'learndash_quiz_completed' => array(
-				'actions' => array(
-					'badgeos_learndash_quiz_completed_specific',
-					'badgeos_learndash_quiz_completed_fail'
-				)
-			)
+        );
+
+        // Actions that we need split up
+        $this->actions = array(
+            'learndash_topic_completed' => 'badgeos_learndash_topic_completed_tag',
+            'learndash_lesson_completed' => 'badgeos_learndash_lesson_completed_tag',
+            'learndash_course_completed' => 'badgeos_learndash_course_completed_tag',
+            'learndash_quiz_completed' => array(
+                'actions' => array(
+                    'badgeos_learndash_quiz_completed_specific',
+                    'badgeos_learndash_quiz_completed_fail'
+                )
+            )
 
 			/*
 			 * Default action split will be badgeos_learndash_{$action}, can set multiple actions with 'actions'

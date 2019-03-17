@@ -215,6 +215,50 @@ function badgeos_learndash_step_etc_select( $step_id, $post_id ) {
 
 	echo '</select>';
 
+// Lesson Category
+    echo '<select name="badgeos_learndash_lesson_category_id" class="select-lesson-category-id">';
+    echo '<option value="">' . __( 'Any Lesson Tag', 'badgeos-learndash' ) . '</option>';
+
+    // Loop through all objects
+    $objects = get_terms( 'post_tag', array(
+        'hide_empty' => false
+    ) );
+
+    if ( !empty( $objects ) ) {
+        foreach ( $objects as $object ) {
+            $selected = '';
+
+            if ( in_array( $current_trigger, array( 'badgeos_learndash_lesson_completed_tag' ) ) )
+                $selected = selected( $current_object_id, $object->term_id, false );
+
+            echo '<option' . $selected . ' value="' . $object->term_id . '">' . esc_html( $object->name ) . '</option>';
+        }
+    }
+
+    echo '</select>';
+
+    // Course Category
+    echo '<select name="badgeos_learndash_course_category_id" class="select-course-category-id">';
+    echo '<option value="">' . __( 'Any Course Tag', 'badgeos-learndash' ) . '</option>';
+
+    // Loop through all objects
+    $objects = get_terms( 'post_tag', array(
+        'hide_empty' => false
+    ) );
+
+    if ( !empty( $objects ) ) {
+        foreach ( $objects as $object ) {
+            $selected = '';
+
+            if ( in_array( $current_trigger, array( 'badgeos_learndash_course_completed_tag' ) ) )
+                $selected = selected( $current_object_id, $object->term_id, false );
+
+            echo '<option' . $selected . ' value="' . $object->term_id . '">' . esc_html( $object->name ) . '</option>';
+        }
+    }
+
+    echo '</select>';
+
 }
 
 add_action( 'badgeos_steps_ui_html_after_trigger_type', 'badgeos_learndash_step_etc_select', 10, 2 );
@@ -284,6 +328,19 @@ function badgeos_learndash_save_step( $title, $step_id, $step_data ) {
 				$title = sprintf( __( 'Failed quiz "%s"', 'badgeos-learndash' ), get_the_title( $object_id ), $object_arg1 );
 			}
 		}
+        // Topic specific
+        elseif ( 'learndash_topic_completed' == $step_data[ 'learndash_trigger' ] ) {
+            // Get Object ID
+            $object_id = (int) $step_data[ 'learndash_topic_id' ];
+
+            // Set new step title
+            if ( empty( $object_id ) ) {
+                $title = __( 'Completed any topic', 'badgeos-learndash' );
+            }
+            else {
+                $title = sprintf( __( 'Completed topic "%s"', 'badgeos-learndash' ), get_the_title( $object_id ) );
+            }
+        }
 		// Lesson specific
 		elseif ( 'learndash_lesson_completed' == $step_data[ 'learndash_trigger' ] ) {
 			// Get Object ID
@@ -310,6 +367,32 @@ function badgeos_learndash_save_step( $title, $step_id, $step_data ) {
 				$title = sprintf( __( 'Completed course "%s"', 'badgeos-learndash' ), get_the_title( $object_id ) );
 			}
 		}
+        // Topic Category specific
+        elseif ( 'badgeos_learndash_topic_completed_tag' == $step_data[ 'learndash_trigger' ] ) {
+            // Get Object ID
+            $object_id = (int) $step_data[ 'learndash_topic_category_id' ];
+
+            // Set new step title
+            if ( empty( $object_id ) ) {
+                $title = __( 'Completed topic in any tag', 'badgeos-learndash' );
+            }
+            else {
+                $title = sprintf( __( 'Completed topic in tag "%s"', 'badgeos-learndash' ), get_term( $object_id, 'post_tag' )->name );
+            }
+        }
+        // Lesson Category specific
+        elseif ( 'badgeos_learndash_lesson_completed_tag' == $step_data[ 'learndash_trigger' ] ) {
+            // Get Object ID
+            $object_id = (int) $step_data[ 'learndash_lesson_category_id' ];
+
+            // Set new step title
+            if ( empty( $object_id ) ) {
+                $title = __( 'Completed lesson in any tag', 'badgeos-learndash' );
+            }
+            else {
+                $title = sprintf( __( 'Completed lesson in tag "%s"', 'badgeos-learndash' ), get_term( $object_id, 'post_tag' )->name );
+            }
+        }
 		// Course Category specific
 		elseif ( 'badgeos_learndash_course_completed_tag' == $step_data[ 'learndash_trigger' ] ) {
 			// Get Object ID
@@ -378,10 +461,13 @@ function badgeos_learndash_step_js() {
 
 			// Listen for our change to our trigger type selector
 			$( document ).on( 'change', '.select-learndash-trigger,' +
-										'.select-quiz-id,' +
-										'.select-lesson-id,' +
-										'.select-course-id,' +
-										'.select-course-category-id', function () {
+                                        '.select-quiz-id,' +
+                                        '.select-topic-id,' +
+                                        '.select-lesson-id,' +
+                                        '.select-course-id,' +
+                                        '.select-topic-category-id,' +
+                                        '.select-lesson-category-id,' +
+                                        '.select-course-category-id', function () {
 
 				badgeos_learndash_step_change( $( this ) , times);
 
@@ -392,14 +478,17 @@ function badgeos_learndash_step_js() {
 
 			// Inject our custom step details into the update step action
 			$( document ).on( 'update_step_data', function ( event, step_details, step ) {
-				step_details.learndash_trigger = $( '.select-learndash-trigger', step ).val();
-				step_details.learndash_trigger_label = $( '.select-learndash-trigger option', step ).filter( ':selected' ).text();
+                step_details.learndash_trigger = $( '.select-learndash-trigger', step ).val();
+                step_details.learndash_trigger_label = $( '.select-learndash-trigger option', step ).filter( ':selected' ).text();
 
-				step_details.learndash_quiz_id = $( '.select-quiz-id', step ).val();
-				step_details.learndash_quiz_grade = $( '.input-quiz-grade', step ).val();
-				step_details.learndash_lesson_id = $( '.select-lesson-id', step ).val();
-				step_details.learndash_course_id = $( '.select-course-id', step ).val();
-				step_details.learndash_course_category_id = $( '.select-course-category-id', step ).val();
+                step_details.learndash_quiz_id = $( '.select-quiz-id', step ).val();
+                step_details.learndash_quiz_grade = $( '.input-quiz-grade', step ).val();
+                step_details.learndash_topic_id = $( '.select-topic-id', step ).val();
+                step_details.learndash_lesson_id = $( '.select-lesson-id', step ).val();
+                step_details.learndash_course_id = $( '.select-course-id', step ).val();
+                step_details.learndash_topic_category_id = $( '.select-topic-category-id', step ).val();
+                step_details.learndash_lesson_category_id = $( '.select-lesson-category-id', step ).val();
+                step_details.learndash_course_category_id = $( '.select-course-category-id', step ).val();
 			} );
 
 		} );
@@ -424,6 +513,14 @@ function badgeos_learndash_step_js() {
 			// Course specific
 			trigger_parent.find( '.select-course-id' )
 				.toggle( 'learndash_course_completed' == trigger_value );
+
+            // Topic Category specific
+            trigger_parent.find( '.select-topic-category-id' )
+                .toggle( 'badgeos_learndash_topic_completed_tag' == trigger_value );
+
+            // Lesson Category specific
+            trigger_parent.find( '.select-lesson-category-id' )
+                .toggle( 'badgeos_learndash_lesson_completed_tag' == trigger_value );
 
 			// Course Category specific
 			trigger_parent.find( '.select-course-category-id' )

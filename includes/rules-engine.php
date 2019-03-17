@@ -143,41 +143,47 @@ function badgeos_learndash_user_deserves_learndash_step( $return, $user_id, $ach
 
 		// Object-specific triggers
 		$learndash_object_triggers = array(
-			'learndash_quiz_completed',
-			'badgeos_learndash_quiz_completed_specific',
-			'badgeos_learndash_quiz_completed_fail',
-			'learndash_lesson_completed',
-			'learndash_course_completed'
+            'learndash_quiz_completed',
+            'badgeos_learndash_quiz_completed_specific',
+            'badgeos_learndash_quiz_completed_fail',
+            'learndash_topic_completed',
+            'learndash_lesson_completed',
+            'learndash_course_completed'
 		);
 
-		// Category-specific triggers
-		$learndash_category_triggers = array(
-			'badgeos_learndash_course_completed_tag'
-		);
+        // Category-specific triggers
+        $learndash_category_triggers = array(
+            'badgeos_learndash_topic_completed_tag',
+            'badgeos_learndash_lesson_completed_tag',
+            'badgeos_learndash_course_completed_tag'
+        );
 
-		// Quiz-specific triggers
-		$learndash_quiz_triggers = array(
-			'learndash_quiz_completed',
-			'badgeos_learndash_quiz_completed_specific',
-			'badgeos_learndash_quiz_completed_fail'
-		);
+        // Quiz-specific triggers
+        $learndash_quiz_triggers = array(
+            'learndash_quiz_completed',
+            'badgeos_learndash_quiz_completed_specific',
+            'badgeos_learndash_quiz_completed_fail'
+        );
 
-		// Triggered object ID (used in these hooks, generally 2nd arg)
+        // Triggered object ID (used in these hooks, generally 2nd arg)
 		$triggered_object_id = 0;
 
 		$arg_data = $args[ 0 ];
 
-		if ( is_array( $arg_data ) ) {
-			if ( isset( $arg_data[ 'quiz' ] ) ) {
-				$triggered_object_id = (int) $arg_data[ 'quiz' ]->ID;
-			}
-			elseif ( isset( $arg_data[ 'lesson' ] ) ) {
-				$triggered_object_id = (int) $arg_data[ 'lesson' ]->ID;
-			}
-			elseif ( isset( $arg_data[ 'course' ] ) ) {
-				$triggered_object_id = (int) $arg_data[ 'course' ]->ID;
-			}
-		}
+        if ( is_array( $arg_data ) ) {
+            if ( isset( $arg_data[ 'quiz' ] ) ) {
+                $triggered_object_id = (int) $arg_data[ 'quiz' ]->ID;
+            }
+            elseif ( isset( $arg_data[ 'lesson' ] ) ) {
+                $triggered_object_id = (int) $arg_data[ 'lesson' ]->ID;
+            }
+            elseif ( isset( $arg_data[ 'topic' ] ) ) {
+                $triggered_object_id = (int) $arg_data[ 'topic' ]->ID;
+            }
+            elseif ( isset( $arg_data[ 'course' ] ) ) {
+                $triggered_object_id = (int) $arg_data[ 'course' ]->ID;
+            }
+        }
 
 		// Use basic trigger logic if no object set
         if ( empty( $object_id ) && !in_array( $learndash_trigger, $learndash_category_triggers ) ) {
